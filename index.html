@@ -4,13 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IPTV+ – In App öffnen</title>
-
-  <meta property="og:site_name"   content="IPTV+">
-  <meta property="og:title"       content="In IPTV+ öffnen">
-  <meta property="og:description" content="Öffne diesen Inhalt direkt in der IPTV+ App.">
-  <meta property="og:image"       content="https://mosa-99.github.io/iptvplus-links/preview.png">
-  <meta property="og:type"        content="website">
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -25,19 +18,24 @@
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 24px;
       padding: 40px 32px;
-      max-width: 380px; width: 90%;
+      max-width: 380px;
+      width: 90%;
       text-align: center;
     }
     .icon { font-size: 64px; margin-bottom: 20px; }
-    h1    { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-    p     { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 28px; line-height: 1.5; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    p  { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 28px; line-height: 1.5; }
     .btn {
       display: inline-block;
-      padding: 16px 32px; border-radius: 14px;
-      font-size: 16px; font-weight: 600;
-      text-decoration: none; color: #fff;
+      padding: 16px 32px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #fff;
       background: linear-gradient(90deg, #6C63FF, #3B82F6);
-      margin-bottom: 12px; width: 100%;
+      margin-bottom: 12px;
+      width: 100%;
     }
     .btn-secondary {
       background: rgba(255,255,255,0.1);
@@ -56,35 +54,38 @@
     <a href="https://apps.apple.com/app/idDEINE_APP_ID" class="btn btn-secondary">
       App herunterladen
     </a>
+
     <small>IPTV+ – Dein smarter IPTV Player</small>
   </div>
 
   <script>
-    function getContentPath() {
-      const p = new URLSearchParams(window.location.search).get('p');
-      if (p) return p;
-      return window.location.pathname.replace(/^\/iptvplus-links/, '') || '/';
+    // Build the iptvplus:// fallback from the current https:// URL
+    // e.g. /iptvplus-links/movie/310753 or /movie/310753
+    const path = window.location.pathname; 
+    let parts = path.split('/').filter(Boolean);
+    
+    // Skip GitHub Pages subfolder repo name if present
+    if (parts[0] === 'iptvplus-links') {
+      parts = parts.slice(1);
     }
-
-    const path  = getContentPath();
-    const parts = path.split('/').filter(Boolean);
+    
     const type  = parts[0];
     const rest  = parts.slice(1).join('/');
 
+    // Update description
     const desc = document.getElementById('desc');
     if (type === 'movie')   desc.textContent = '🎬 Jemand hat einen Film mit dir geteilt.';
     if (type === 'series')  desc.textContent = '📺 Jemand hat eine Serie mit dir geteilt.';
     if (type === 'episode') desc.textContent = '▶️ Jemand hat eine Episode mit dir geteilt.';
 
-    const deepLink = type ? `iptvplus://${type}/${rest}` : 'iptvplus://';
-    const btn      = document.getElementById('open-btn');
-    btn.href       = deepLink;
+    // Set deep-link button
+    const btn = document.getElementById('open-btn');
+    btn.href = `iptvplus://${type}/${rest}`;
 
-    // Auto-open on all platforms — who opens this page has the app
-    // (AirDrop never reaches this page anyway, it opens the app directly)
-    if (type) {
-      setTimeout(() => { window.location = deepLink; }, 300);
-    }
+    // On iOS, try to open the app immediately; if not installed the page stays
+    setTimeout(() => {
+      window.location = btn.href;
+    }, 300);
   </script>
 </body>
 </html>
