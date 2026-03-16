@@ -1,0 +1,26 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": [
+          "CJ8BNZ6LB5.com.iptvplus.app"
+        ],
+        "components": [
+          {
+            "/": "/movie/*",
+            "comment": "Alle Film-Links"
+          },
+          {
+            "/": "/series/*",
+            "comment": "Alle Serien-Links"
+          },
+          {
+            "/": "/episode/*/*/*",
+            "comment": "Alle Episoden-Links (seriesId/season/episode)"
+          }
+        ]
+      }
+    ]
+  }
+}
