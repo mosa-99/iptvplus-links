@@ -3,89 +3,494 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV+ – In App öffnen</title>
+  <title>IPTV+ | Der ultimative IPTV Player für iOS</title>
+  <meta name="description" content="Entdecke IPTV+, den smartesten und modernsten IPTV Player für dein iPhone und iPad. Erlebe deine Playlists in einem völlig neuen Design.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #6C63FF;
+      --secondary: #3B82F6;
+      --bg-dark: #0A0A14;
+      --bg-light: #161625;
+      --text-main: #FFFFFF;
+      --text-muted: rgba(255, 255, 255, 0.65);
+      --glass-bg: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
     body {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
-      display: flex; align-items: center; justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-      color: #fff;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow-x: hidden;
+      line-height: 1.6;
     }
-    .card {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 24px;
-      padding: 40px 32px;
-      max-width: 380px;
-      width: 90%;
+
+    /* Animated background blobs */
+    .bg-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      animation: float 20s infinite alternate ease-in-out;
+      opacity: 0.4;
+    }
+    .blob-1 {
+      width: 500px;
+      height: 500px;
+      background: rgba(108, 99, 255, 0.3);
+      top: -10%;
+      left: -10%;
+    }
+    .blob-2 {
+      width: 400px;
+      height: 400px;
+      background: rgba(59, 130, 246, 0.25);
+      bottom: -10%;
+      right: -10%;
+      animation-delay: -5s;
+    }
+    .blob-3 {
+      width: 600px;
+      height: 600px;
+      background: rgba(138, 43, 226, 0.2);
+      top: 40%;
+      left: 60%;
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -50px) scale(1.1); }
+      100% { transform: translate(-40px, 30px) scale(0.9); }
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 32px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeInDown 1s ease forwards;
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      font-size: 32px;
+      background: none;
+      -webkit-text-fill-color: initial;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
+      padding: 60px 0;
+      animation: fadeInUp 1s ease forwards;
+      animation-delay: 0.2s;
+      opacity: 0;
     }
-    .icon { font-size: 64px; margin-bottom: 20px; }
-    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-    p  { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 28px; line-height: 1.5; }
-    .btn {
+    .hero-badge {
       display: inline-block;
-      padding: 16px 32px;
-      border-radius: 14px;
-      font-size: 16px;
+      padding: 8px 16px;
+      background: rgba(108, 99, 255, 0.15);
+      border: 1px solid rgba(108, 99, 255, 0.3);
+      border-radius: 100px;
+      color: #A5A1FF;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 82px);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -2px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: clamp(18px, 2vw, 22px);
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 40px auto;
+      font-weight: 300;
+    }
+
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 36px;
+      border-radius: 16px;
+      font-size: 18px;
       font-weight: 600;
       text-decoration: none;
-      color: #fff;
-      background: linear-gradient(90deg, #6C63FF, #3B82F6);
-      margin-bottom: 12px;
-      width: 100%;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: white;
+      box-shadow: 0 8px 24px rgba(108, 99, 255, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transform: skewX(-20deg);
+      transition: left 0.5s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(108, 99, 255, 0.4);
+    }
+    .btn-primary:hover::after {
+      left: 150%;
+    }
+    
     .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      color: white;
     }
-    small { color: rgba(255,255,255,0.35); font-size: 12px; margin-top: 16px; display: block; }
+    .btn-secondary:hover {
+      background: var(--glass-hover);
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    /* App Preview / Mockup Area */
+    .app-preview-container {
+      margin-top: 60px;
+      width: 100%;
+      height: 400px;
+      position: relative;
+      perspective: 1000px;
+      animation: slideUp 1.2s ease forwards;
+      animation-delay: 0.4s;
+      opacity: 0;
+    }
+    .app-preview-glass {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) rotateX(15deg);
+      width: 80%;
+      max-width: 800px;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-top: 1px solid rgba(255,255,255,0.2);
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-header {
+      height: 60px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 8px;
+    }
+    .dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+    }
+    .dot:nth-child(1) { background: #FF5F56; }
+    .dot:nth-child(2) { background: #FFBD2E; }
+    .dot:nth-child(3) { background: #27C93F; }
+
+    .app-body {
+      flex: 1;
+      display: flex;
+      padding: 32px;
+      gap: 24px;
+    }
+    .movie-card-mock {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .movie-card-mock::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 50%;
+      background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 100%);
+    }
+
+    /* Features Grid */
+    .features-section {
+      padding: 100px 0;
+      position: relative;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .section-title h2 {
+      font-size: 40px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .section-title p {
+      color: var(--text-muted);
+      font-size: 18px;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+    }
+    .feature-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card:hover {
+      transform: translateY(-8px);
+      background: var(--glass-hover);
+      border-color: rgba(255,255,255,0.15);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(108,99,255,0.2) 0%, rgba(59,130,246,0.2) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(108,99,255,0.3);
+    }
+    .feature-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .feature-desc {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--glass-border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) rotateX(15deg) translateY(100px); }
+      to { opacity: 1; transform: translateX(-50%) rotateX(15deg) translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 40px 0; }
+      .hero h1 { font-size: 40px; }
+      .btn-group { flex-direction: column; width: 100%; }
+      .btn { width: 100%; justify-content: center; }
+      .app-preview-glass { width: 95%; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="icon">📺</div>
-    <h1>In IPTV+ öffnen</h1>
-    <p id="desc">Dieser Link führt zu einem Inhalt in der IPTV+ App.</p>
 
-    <a id="open-btn" href="#" class="btn">In App öffnen</a>
-    <a href="https://apps.apple.com/app/idDEINE_APP_ID" class="btn btn-secondary">
-      App herunterladen
-    </a>
+  <!-- Animated Background -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
 
-    <small>IPTV+ – Dein smarter IPTV Player</small>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <span class="logo-icon">📺</span>
+        IPTV+
+      </div>
+      <!-- You could put a nav here if needed later -->
+    </header>
+
+    <section class="hero">
+      <div class="hero-badge">Die neue Ära des Streamings</div>
+      <h1>Alle deine Playlists,<br><span>Neu Erfunden.</span></h1>
+      <p>IPTV+ verwandelt deine langweiligen Links in ein echtes Kinoerlebnis. Genieße ein atemberaubendes Design, smarte Deep-Links und volle Download-Unterstützung für unterwegs.</p>
+      
+      <div class="btn-group">
+        <a href="https://apps.apple.com/app/idDEINE_APP_ID" class="btn btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z" style="display:none;"/>
+            <path d="M16.365 21.492C15.029 21.821 13.551 22 12 22 6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 1.258-.236 2.463-.66 3.582M17.5 14.5a2.5 2.5 0 0 1-5 0V11a2.5 2.5 0 0 1 5 0v3.5zm-5 4v-4m-3.95-6.05L7.5 7.5M19 12h2m-6-8V2M5 12H3m4.05 4.05L6.05 17.1M17 6.3l1.1-1.1" style="display:none;"/>
+            <path d="M18.71 19.5C17.88 20.74 15 22 12 22s-5.88-1.26-6.71-2.5c-.39-.58-.33-1.35.15-1.85.93-.97 2.15-1.65 3.56-1.65h6c1.41 0 2.63.68 3.56 1.65.48.5.54 1.27.15 1.85z" style="display:none;"/>
+            <!-- Custom App Store Icon roughly -->
+            <path d="M15.4,10.6c0-2.4,2-3.7,2.1-3.7c-1.1-1.6-2.9-1.9-3.5-1.9c-1.5-0.1-3,0.9-3.8,0.9c-0.8,0-2-0.9-3.3-0.9 c-1.7,0-3.3,1-4.2,2.5C0.8,10.9,1.7,15,3.4,17.4c0.8,1.2,1.8,2.5,3.2,2.5c1.3,0,1.8-0.8,3.3-0.8c1.5,0,2,0.8,3.4,0.8 c1.4,0,2.3-1.3,3.1-2.5c1-1.4,1.4-2.8,1.4-2.9C17.7,14.5,15.4,13.6,15.4,10.6z M11.8,4.7c0.7-0.9,1.2-2.1,1-3.3 C11.8,1.5,10.7,2,9.9,2.8C9.3,3.5,8.8,4.7,9,5.8C10,5.9,11.1,5.5,11.8,4.7z"/>
+          </svg>
+          App Store
+        </a>
+        <a href="#features" class="btn btn-secondary">
+          Features Entdecken
+        </a>
+      </div>
+
+      <div class="app-preview-container">
+        <div class="app-preview-glass">
+          <div class="app-header">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+          <div class="app-body">
+            <div class="movie-card-mock"></div>
+            <div class="movie-card-mock"></div>
+            <div class="movie-card-mock"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features-section">
+      <div class="section-title">
+        <h2>Warum IPTV+?</h2>
+        <p>Entwickelt für die höchsten Ansprüche an Streaming und Design.</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🚀</div>
+          <h3 class="feature-title">Pfeilschnell</h3>
+          <p class="feature-desc">Genieße butterweiches Scrolling, sofortige Ladezeiten und eine Engine, die selbst mit riesigen Playlists spielend fertig wird.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">⬇️</div>
+          <h3 class="feature-title">Offline Downloads</h3>
+          <p class="feature-desc">Lade deine Lieblingsfilme und Serien ganz einfach herunter und schaue sie jederzeit, auch wenn du kein Internet hast.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔗</div>
+          <h3 class="feature-title">Deep Links</h3>
+          <p class="feature-desc">Teile Inhalte direkt mit deinen Freunden. Tippt man auf einen geteilten Link, öffnet sich der Film sofort in der App.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🖥️</div>
+          <h3 class="feature-title">Picture-in-Picture</h3>
+          <p class="feature-desc">Schau weiter, während du chattest oder im Internet surfst. Unser nativer Player unterstützt PiP auf Systemebene.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3 class="feature-title">Premium Design</h3>
+          <p class="feature-desc">Dunkelmodus, Glassmorphismus und makellose Typografie. Eine UI, die sich nicht wie eine App anfühlt, sondern wie ein Erlebnis.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">Sicher & Privat</h3>
+          <p class="feature-desc">Wir tracken dich nicht. Deine Playlists bleiben auf deinem Gerät und werden niemals an unsere Server gesendet.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>&copy; 2026 IPTV+ App. Alle Rechte vorbehalten. Dies ist die Begleit-Website für das iOS Erlebnis.</p>
+    </footer>
   </div>
 
   <script>
-    // Build the iptvplus:// fallback from the current https:// URL
-    // e.g. /iptvplus-links/movie/310753 or /movie/310753
-    const path = window.location.pathname; 
-    let parts = path.split('/').filter(Boolean);
-    
-    // Skip GitHub Pages subfolder repo name if present
-    if (parts[0] === 'iptvplus-links') {
-      parts = parts.slice(1);
-    }
-    
-    const type  = parts[0];
-    const rest  = parts.slice(1).join('/');
-
-    // Update description
-    const desc = document.getElementById('desc');
-    if (type === 'movie')   desc.textContent = '🎬 Jemand hat einen Film mit dir geteilt.';
-    if (type === 'series')  desc.textContent = '📺 Jemand hat eine Serie mit dir geteilt.';
-    if (type === 'episode') desc.textContent = '▶️ Jemand hat eine Episode mit dir geteilt.';
-
-    // Set deep-link button
-    const btn = document.getElementById('open-btn');
-    btn.href = `iptvplus://${type}/${rest}`;
-
-    // On iOS, try to open the app immediately; if not installed the page stays
-    setTimeout(() => {
-      window.location = btn.href;
-    }, 300);
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
   </script>
 </body>
 </html>
