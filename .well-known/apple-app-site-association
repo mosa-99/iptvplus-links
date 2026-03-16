@@ -8,16 +8,28 @@
         ],
         "components": [
           {
+            "/": "/iptvplus-links/movie/*",
+            "comment": "GitHub Pages Movie Links"
+          },
+          {
+            "/": "/iptvplus-links/series/*",
+            "comment": "GitHub Pages Series Links"
+          },
+          {
+            "/": "/iptvplus-links/episode/*/*/*",
+            "comment": "GitHub Pages Episode Links"
+          },
+          {
             "/": "/movie/*",
-            "comment": "Alle Film-Links"
+            "comment": "Root Movie Links"
           },
           {
             "/": "/series/*",
-            "comment": "Alle Serien-Links"
+            "comment": "Root Series Links"
           },
           {
             "/": "/episode/*/*/*",
-            "comment": "Alle Episoden-Links (seriesId/season/episode)"
+            "comment": "Root Episode Links"
           }
         ]
       }
