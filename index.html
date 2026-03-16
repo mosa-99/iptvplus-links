@@ -13,136 +13,122 @@
   <meta property="og:type"        content="website">
 
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      min-height:100vh;
-      background:linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%);
-      display:flex; align-items:center; justify-content:center;
-      font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
-      color:#fff;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      color: #fff;
     }
     .card {
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:24px;
-      padding:40px 32px;
-      max-width:380px; width:90%;
-      text-align:center;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 40px 32px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
     }
-    .icon  { font-size:64px; margin-bottom:20px; }
-    h1     { font-size:24px; font-weight:700; margin-bottom:8px; }
-    p      { font-size:15px; color:rgba(255,255,255,.6); margin-bottom:28px; line-height:1.5; }
-    .badge {
-      display:inline-block;
-      padding:4px 12px; border-radius:20px;
-      font-size:12px; font-weight:600;
-      background:rgba(108,99,255,.2); color:#a78bfa;
-      margin-bottom:16px;
-    }
+    .icon { font-size: 64px; margin-bottom: 20px; }
+    h1    { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    p     { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 28px; line-height: 1.5; }
     .btn {
-      display:block;
-      padding:16px 32px; border-radius:14px;
-      font-size:16px; font-weight:600;
-      text-decoration:none; color:#fff;
-      margin-bottom:12px; width:100%;
-      cursor:pointer; border:none;
+      display: inline-block;
+      padding: 16px 32px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(90deg, #6C63FF, #3B82F6);
+      margin-bottom: 12px;
+      width: 100%;
     }
-    .btn-primary  { background:linear-gradient(90deg,#6C63FF,#3B82F6); }
     .btn-secondary {
-      background:rgba(255,255,255,.1);
-      border:1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
     }
-    .not-ios-hint {
-      font-size:13px;
-      color:rgba(255,255,255,.45);
-      background:rgba(255,255,255,.05);
-      border-radius:10px;
-      padding:12px 16px;
-      margin-bottom:12px;
-      line-height:1.5;
+    .mac-hint {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      line-height: 1.5;
     }
-    small { color:rgba(255,255,255,.3); font-size:12px; margin-top:16px; display:block; }
+    small { color: rgba(255,255,255,0.35); font-size: 12px; margin-top: 16px; display: block; }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="icon"  id="icon">📺</div>
-    <div class="badge" id="badge">IPTV+</div>
-    <h1 id="title">In IPTV+ öffnen</h1>
-    <p  id="desc">Dieser Link führt zu einem Inhalt in der IPTV+ App.</p>
+    <div class="icon">📺</div>
+    <h1>In IPTV+ öffnen</h1>
+    <p id="desc">Dieser Link führt zu einem Inhalt in der IPTV+ App.</p>
 
-    <!-- Only shown on iOS -->
-    <button id="open-btn" class="btn btn-primary" style="display:none">
-      In App öffnen
-    </button>
+    <a id="open-btn" href="#" class="btn">In App öffnen</a>
 
-    <!-- Shown on non-iOS (Mac, Windows, Android…) -->
-    <div id="not-ios-hint" class="not-ios-hint" style="display:none">
-      📱 Öffne diesen Link auf deinem iPhone oder iPad, um ihn direkt in IPTV+ zu starten.
+    <div id="mac-hint" class="mac-hint" style="display:none">
+      📱 Öffne diesen Link auf deinem iPhone oder iPad,<br>um direkt in IPTV+ zu springen.
     </div>
 
     <a href="https://apps.apple.com/app/idDEINE_APP_ID" class="btn btn-secondary">
       App herunterladen
     </a>
-
     <small>IPTV+ – Dein smarter IPTV Player</small>
   </div>
 
   <script>
-    // ── Resolve content path ──────────────────────────────────────────────────
-    // GitHub Pages 404.html redirects unknown paths as ?p=/movie/163554
+    // ── Resolve the content path ──────────────────────────────────────────────
+    // Two entry points:
+    //  1) Direct URL:  /iptvplus-links/movie/163554  → served by 404.html which
+    //     redirects to  /iptvplus-links/?p=/movie/163554
+    //  2) Root index:  /iptvplus-links/  (no path)
+
     function getContentPath() {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('p')) return params.get('p');
-      return window.location.pathname.replace(/^\/iptvplus-links/, '') || '/';
+      // Check for redirect query param from 404.html first
+      const p = new URLSearchParams(window.location.search).get('p');
+      if (p) return p;  // e.g. /movie/163554
+
+      // Strip repo subfolder from direct pathname
+      const raw = window.location.pathname;           // /iptvplus-links/movie/163554
+      return raw.replace(/^\/iptvplus-links/, '') || '/';
     }
 
-    const path  = getContentPath();
-    const parts = path.split('/').filter(Boolean);
-    const type  = parts[0];
-    const rest  = parts.slice(1).join('/');
+    const path  = getContentPath();                   // /movie/163554
+    const parts = path.split('/').filter(Boolean);    // ["movie", "163554"]
+    const type  = parts[0];                           // "movie"
+    const rest  = parts.slice(1).join('/');           // "163554"
 
-    // ── Personalise UI ────────────────────────────────────────────────────────
-    const icon  = document.getElementById('icon');
-    const badge = document.getElementById('badge');
-    const title = document.getElementById('title');
-    const desc  = document.getElementById('desc');
+    // ── Update description ────────────────────────────────────────────────────
+    const desc = document.getElementById('desc');
+    if (type === 'movie')   desc.textContent = '🎬 Jemand hat einen Film mit dir geteilt.';
+    if (type === 'series')  desc.textContent = '📺 Jemand hat eine Serie mit dir geteilt.';
+    if (type === 'episode') desc.textContent = '▶️ Jemand hat eine Episode mit dir geteilt.';
 
-    if (type === 'movie') {
-      icon.textContent  = '🎬';
-      badge.textContent = 'Film';
-      title.textContent = 'Film in IPTV+ öffnen';
-      desc.textContent  = 'Jemand hat einen Film mit dir geteilt. Öffne ihn direkt in der App.';
-    } else if (type === 'series') {
-      icon.textContent  = '📺';
-      badge.textContent = 'Serie';
-      title.textContent = 'Serie in IPTV+ öffnen';
-      desc.textContent  = 'Jemand hat eine Serie mit dir geteilt. Öffne sie direkt in der App.';
-    } else if (type === 'episode') {
-      icon.textContent  = '▶️';
-      badge.textContent = 'Episode';
-      title.textContent = 'Episode in IPTV+ öffnen';
-      desc.textContent  = 'Jemand hat eine Episode mit dir geteilt. Öffne sie direkt in der App.';
-    }
+    // ── Build deep link ───────────────────────────────────────────────────────
+    const deepLink = type ? `iptvplus://${type}/${rest}` : 'iptvplus://';
+    const btn      = document.getElementById('open-btn');
+    btn.href       = deepLink;
 
-    // ── Platform detection ────────────────────────────────────────────────────
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    const deepLink  = type ? `iptvplus://${type}/${rest}` : 'iptvplus://';
-    const openBtn   = document.getElementById('open-btn');
-    const hint      = document.getElementById('not-ios-hint');
+    // ── Platform guard: only auto-redirect + show button on iOS ──────────────
+    // On macOS/Windows iptvplus:// is not registered → Safari shows an error.
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+               || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     if (isIOS && type) {
-      // Show "In App öffnen" button and wire it up
-      openBtn.style.display = 'block';
-      openBtn.addEventListener('click', () => { window.location = deepLink; });
-
-      // Auto-attempt after a short delay so the page renders first
-      setTimeout(() => { window.location = deepLink; }, 600);
+      // Wire up button click
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location = deepLink;
+      });
+      // Auto-open after short delay
+      setTimeout(function() { window.location = deepLink; }, 300);
     } else {
-      // Not iOS – show the "open on iPhone" hint instead
-      hint.style.display = 'block';
+      // Not iOS – hide the "In App öffnen" button, show the hint instead
+      btn.style.display = 'none';
+      document.getElementById('mac-hint').style.display = 'block';
     }
   </script>
 </body>
