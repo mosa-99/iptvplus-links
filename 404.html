@@ -60,8 +60,15 @@
 
   <script>
     // Build the iptvplus:// fallback from the current https:// URL
-    const path = window.location.pathname; // e.g. /movie/163554
-    const parts = path.split('/').filter(Boolean);
+    // e.g. /iptvplus-links/movie/310753 or /movie/310753
+    const path = window.location.pathname; 
+    let parts = path.split('/').filter(Boolean);
+    
+    // Skip GitHub Pages subfolder repo name if present
+    if (parts[0] === 'iptvplus-links') {
+      parts = parts.slice(1);
+    }
+    
     const type  = parts[0];
     const rest  = parts.slice(1).join('/');
 
