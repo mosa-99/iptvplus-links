@@ -1,496 +1,1264 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IPTV+ | Der ultimative IPTV Player für iOS</title>
-  <meta name="description" content="Entdecke IPTV+, den smartesten und modernsten IPTV Player für dein iPhone und iPad. Erlebe deine Playlists in einem völlig neuen Design.">
-  
+  <title>IPTV+ – Dein smarter IPTV Player</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet">
 
   <style>
-    :root {
-      --primary: #6C63FF;
-      --secondary: #3B82F6;
-      --bg-dark: #0A0A14;
-      --bg-light: #161625;
-      --text-main: #FFFFFF;
-      --text-muted: rgba(255, 255, 255, 0.65);
-      --glass-bg: rgba(255, 255, 255, 0.03);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-hover: rgba(255, 255, 255, 0.08);
-    }
-
-    * {
+    *,
+    *::before,
+    *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    :root {
+      --bg: #05060f;
+      --accent: #7C5CFC;
+      --accent2: #FC5C7D;
+      --teal: #00D4FF;
+      --gold: #F5C842;
+      --text: #eceef5;
+      --muted: rgba(236, 238, 245, 0.5);
+      --card-r: 18px;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
       overflow-x: hidden;
-      line-height: 1.6;
     }
 
-    /* Animated background blobs */
-    .bg-blobs {
+    /* ══════════════════════════════════════
+       FIXED BACKGROUND LAYERS
+    ══════════════════════════════════════ */
+    #nebula {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      perspective: 1400px;
+      perspective-origin: 50% 50%;
+      pointer-events: none;
+    }
+
+    #cards-world {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+
+    /* ══════════════════════════════════════
+       POSTER CARDS  (identical to 404.html)
+    ══════════════════════════════════════ */
+    .poster {
+      position: absolute;
+      width: 130px;
+      height: 195px;
+      border-radius: var(--card-r);
+      overflow: hidden;
+      transform-style: preserve-3d;
+      will-change: transform;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .poster::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 40%, transparent 60%);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    .poster .p-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 28px 10px 10px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+      font-family: 'Syne', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.3;
+    }
+
+    .poster .p-tag {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .poster .p-deco {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .poster.p0 {
+      background: linear-gradient(155deg, #0f0c29, #302b63, #24243e);
+    }
+
+    .poster.p1 {
+      background: linear-gradient(155deg, #1a0533, #6a0572, #ab2fb4);
+    }
+
+    .poster.p2 {
+      background: linear-gradient(155deg, #000428, #004e92, #0098d4);
+    }
+
+    .poster.p3 {
+      background: linear-gradient(155deg, #0d0d0d, #434343, #1a1a2e);
+    }
+
+    .poster.p4 {
+      background: linear-gradient(155deg, #1f0a00, #8b1a1a, #c0392b);
+    }
+
+    .poster.p5 {
+      background: linear-gradient(155deg, #001b00, #1a5c1a, #27ae60);
+    }
+
+    .poster.p6 {
+      background: linear-gradient(155deg, #1a0a00, #7a3b00, #e67e22);
+    }
+
+    .poster.p7 {
+      background: linear-gradient(155deg, #000000, #0a0a0a, #1c1c2e);
+    }
+
+    .poster.p8 {
+      background: linear-gradient(155deg, #0f2027, #203a43, #2c5364);
+    }
+
+    .poster.p9 {
+      background: linear-gradient(155deg, #1a001a, #4a004a, #8e44ad);
+    }
+
+    .poster.p10 {
+      background: linear-gradient(155deg, #001f00, #004d00, #145a32);
+    }
+
+    .poster.p11 {
+      background: linear-gradient(155deg, #0d0d2b, #1a1a5c, #2980b9);
+    }
+
+    .poster.p12 {
+      background: linear-gradient(155deg, #1f0000, #6b0000, #c0392b);
+    }
+
+    .poster.p13 {
+      background: linear-gradient(155deg, #100000, #3d0000, #922b21);
+    }
+
+    .poster.p14 {
+      background: linear-gradient(155deg, #070707, #1a1a1a, #2c3e50);
+    }
+
+    @keyframes float0 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(0px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-14px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float1 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-8px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(10px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float2 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(6px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-18px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float3 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-4px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(12px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float4 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(10px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-8px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float5 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-12px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(6px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float6 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(4px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-16px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float7 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-6px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(14px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float8 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(8px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-10px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float9 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-10px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(8px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float10 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(2px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-12px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float11 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-16px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(4px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float12 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(12px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-6px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float13 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-3px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(16px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float14 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(16px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-4px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateZ(var(--tz)) scale(0.6) rotateY(40deg);
+      }
+
+      to {
+        opacity: var(--op);
+      }
+    }
+
+    /* ══════════════════════════════════════
+       PAGE CONTENT  (scrollable, above bg)
+    ══════════════════════════════════════ */
+    #page {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ── NAV ── */
+    nav {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      z-index: -1;
-      pointer-events: none;
-    }
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      animation: float 20s infinite alternate ease-in-out;
-      opacity: 0.4;
-    }
-    .blob-1 {
-      width: 500px;
-      height: 500px;
-      background: rgba(108, 99, 255, 0.3);
-      top: -10%;
-      left: -10%;
-    }
-    .blob-2 {
-      width: 400px;
-      height: 400px;
-      background: rgba(59, 130, 246, 0.25);
-      bottom: -10%;
-      right: -10%;
-      animation-delay: -5s;
-    }
-    .blob-3 {
-      width: 600px;
-      height: 600px;
-      background: rgba(138, 43, 226, 0.2);
-      top: 40%;
-      left: 60%;
-      animation-delay: -10s;
-    }
-
-    @keyframes float {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(30px, -50px) scale(1.1); }
-      100% { transform: translate(-40px, 30px) scale(0.9); }
-    }
-
-    /* Container */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    /* Header */
-    header {
-      padding: 32px 0;
+      right: 0;
+      z-index: 100;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      animation: fadeInDown 1s ease forwards;
+      justify-content: space-between;
+      padding: 20px 40px;
+      background: rgba(5, 6, 15, 0.6);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      transition: background 0.3s;
     }
-    .logo {
-      font-size: 28px;
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #fff 40%, var(--accent));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-logo span {
+      color: var(--accent);
+      -webkit-text-fill-color: var(--accent);
+    }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 4px 20px rgba(124, 92, 252, 0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(124, 92, 252, 0.5);
+    }
+
+    .nav-cta:active {
+      transform: scale(0.97);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+    }
+
+    /* deep vignette so text is readable over cards */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 70% at 50% 50%, rgba(5, 6, 15, 0.55) 0%, rgba(5, 6, 15, 0.1) 100%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: rgba(124, 92, 252, 0.12);
+      border: 1px solid rgba(124, 92, 252, 0.25);
+      color: #a98dff;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-eyebrow .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.2
+      }
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(44px, 8vw, 96px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      max-width: 820px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.7s ease 0.1s both;
+    }
+
+    .hero h1 .grad {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 60%, var(--teal) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.65;
+      margin-bottom: 44px;
+      animation: fadeUp 0.7s ease 0.2s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      animation: fadeUp 0.7s ease 0.3s both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 16px 32px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 8px 28px rgba(124, 92, 252, 0.4);
+      position: relative;
+      overflow: hidden;
+      animation: pulseShadow 2.5s ease-in-out infinite;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    @keyframes pulseShadow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(124, 92, 252, 0.4), 0 8px 24px rgba(124, 92, 252, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(124, 92, 252, 0), 0 8px 32px rgba(124, 92, 252, 0.5);
+      }
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(124, 92, 252, 0.55);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 15px 28px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* ── SCROLL HINT ── */
+    .scroll-hint {
+      margin-top: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.2);
+      animation: fadeUp 0.7s ease 0.5s both;
+    }
+
+    .scroll-hint .arrow {
+      width: 20px;
+      height: 20px;
+      border-right: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.15);
+      transform: rotate(45deg);
+      animation: bounce 1.8s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: rotate(45deg) translateY(0)
+      }
+
+      50% {
+        transform: rotate(45deg) translateY(5px)
+      }
+    }
+
+    /* ══════════════════════════════════════
+       CONTENT SECTIONS  (below hero)
+    ══════════════════════════════════════ */
+
+    /* Frosted section wrapper */
+    .frosted-section {
+      position: relative;
+      background: rgba(5, 6, 15, 0.78);
+      backdrop-filter: blur(32px) saturate(1.3);
+      -webkit-backdrop-filter: blur(32px) saturate(1.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      padding: 40px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .stat-item {
+      flex: 1;
+      min-width: 140px;
+      text-align: center;
+      padding: 16px 24px;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .stat-item:last-child {
+      border-right: none;
+    }
+
+    .stat-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* ── FEATURES ── */
+    .features-section {
+      padding: 80px 24px 100px;
+    }
+
+    .section-label {
       display: flex;
       align-items: center;
       gap: 12px;
-    }
-    .logo-icon {
-      font-size: 32px;
-      background: none;
-      -webkit-text-fill-color: initial;
-    }
-
-    /* Hero Section */
-    .hero {
-      min-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 60px 0;
-      animation: fadeInUp 1s ease forwards;
-      animation-delay: 0.2s;
-      opacity: 0;
-    }
-    .hero-badge {
-      display: inline-block;
-      padding: 8px 16px;
-      background: rgba(108, 99, 255, 0.15);
-      border: 1px solid rgba(108, 99, 255, 0.3);
-      border-radius: 100px;
-      color: #A5A1FF;
+      font-size: 11px;
       font-weight: 600;
-      font-size: 14px;
-      margin-bottom: 24px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .hero h1 {
-      font-size: clamp(48px, 8vw, 82px);
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 24px;
-      letter-spacing: -2px;
-    }
-    .hero h1 span {
-      background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .hero p {
-      font-size: clamp(18px, 2vw, 22px);
-      color: var(--text-muted);
-      max-width: 600px;
-      margin: 0 auto 40px auto;
-      font-weight: 300;
+      color: var(--accent);
+      margin-bottom: 16px;
     }
 
-    /* Buttons */
-    .btn-group {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 2px;
+      background: var(--accent);
     }
-    .btn {
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 480px;
+      margin-bottom: 56px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .feat-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 20px;
+      padding: 28px;
+      transition: border-color 0.3s, transform 0.3s, background 0.3s;
+      opacity: 0;
+      transform: translateY(28px);
+    }
+
+    .feat-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feat-card:hover {
+      border-color: rgba(124, 92, 252, 0.3);
+      background: rgba(124, 92, 252, 0.05);
+      transform: translateY(-4px);
+    }
+
+    .feat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+      background: rgba(124, 92, 252, 0.12);
+      border: 1px solid rgba(124, 92, 252, 0.2);
+    }
+
+    .feat-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feat-card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      padding: 80px 24px 100px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .cta-inner {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .cta-section .section-title {
+      margin-bottom: 12px;
+    }
+
+    .cta-section .section-sub {
+      margin: 0 auto 40px;
+      text-align: center;
+    }
+
+    .app-badge {
       display: inline-flex;
       align-items: center;
       gap: 12px;
-      padding: 16px 36px;
+      padding: 14px 28px;
       border-radius: 16px;
-      font-size: 18px;
-      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text);
       text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    .btn-primary {
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      color: white;
-      box-shadow: 0 8px 24px rgba(108, 99, 255, 0.25);
-      position: relative;
-      overflow: hidden;
-    }
-    .btn-primary::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%; width: 50%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transform: skewX(-20deg);
-      transition: left 0.5s ease;
-    }
-    .btn-primary:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(108, 99, 255, 0.4);
-    }
-    .btn-primary:hover::after {
-      left: 150%;
-    }
-    
-    .btn-secondary {
-      background: var(--glass-bg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--glass-border);
-      color: white;
-    }
-    .btn-secondary:hover {
-      background: var(--glass-hover);
-      transform: translateY(-4px);
-      border-color: rgba(255,255,255,0.2);
-    }
-
-    /* App Preview / Mockup Area */
-    .app-preview-container {
-      margin-top: 60px;
-      width: 100%;
-      height: 400px;
-      position: relative;
-      perspective: 1000px;
-      animation: slideUp 1.2s ease forwards;
-      animation-delay: 0.4s;
-      opacity: 0;
-    }
-    .app-preview-glass {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%) rotateX(15deg);
-      width: 80%;
-      max-width: 800px;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-top: 1px solid rgba(255,255,255,0.2);
-      border-radius: 24px 24px 0 0;
-      box-shadow: 0 -20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .app-header {
-      height: 60px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      gap: 8px;
-    }
-    .dot {
-      width: 12px; height: 12px; border-radius: 50%;
-      background: rgba(255,255,255,0.2);
-    }
-    .dot:nth-child(1) { background: #FF5F56; }
-    .dot:nth-child(2) { background: #FFBD2E; }
-    .dot:nth-child(3) { background: #27C93F; }
-
-    .app-body {
-      flex: 1;
-      display: flex;
-      padding: 32px;
-      gap: 24px;
-    }
-    .movie-card-mock {
-      flex: 1;
-      background: rgba(255,255,255,0.03);
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.05);
-      position: relative;
-      overflow: hidden;
-    }
-    .movie-card-mock::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0; height: 50%;
-      background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 100%);
-    }
-
-    /* Features Grid */
-    .features-section {
-      padding: 100px 0;
-      position: relative;
-    }
-    .section-title {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    .section-title h2 {
-      font-size: 40px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-    .section-title p {
-      color: var(--text-muted);
-      font-size: 18px;
-    }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 32px;
-    }
-    .feature-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 40px;
-      transition: all 0.4s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    .feature-card:hover {
-      transform: translateY(-8px);
-      background: var(--glass-hover);
-      border-color: rgba(255,255,255,0.15);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    }
-    .feature-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, rgba(108,99,255,0.2) 0%, rgba(59,130,246,0.2) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin-bottom: 24px;
-      border: 1px solid rgba(108,99,255,0.3);
-    }
-    .feature-title {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-    .feature-desc {
-      color: var(--text-muted);
-      font-size: 15px;
-      line-height: 1.6;
-    }
-
-    /* Footer */
-    footer {
-      border-top: 1px solid var(--glass-border);
-      padding: 40px 0;
-      text-align: center;
-      color: var(--text-muted);
       font-size: 14px;
-    }
-    
-    /* Animations */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeInDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateX(-50%) rotateX(15deg) translateY(100px); }
-      to { opacity: 1; transform: translateX(-50%) rotateX(15deg) translateY(0); }
+      font-weight: 500;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
     }
 
-    @media (max-width: 768px) {
-      .hero { padding: 40px 0; }
-      .hero h1 { font-size: 40px; }
-      .btn-group { flex-direction: column; width: 100%; }
-      .btn { width: 100%; justify-content: center; }
-      .app-preview-glass { width: 95%; }
+    .app-badge:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.18);
+      transform: translateY(-2px);
+    }
+
+    .app-badge svg {
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.2);
+      letter-spacing: 0.06em;
+    }
+
+    /* ══════════════════════════════════════
+       REDUCED MOTION
+    ══════════════════════════════════════ */
+    @media (prefers-reduced-motion: reduce) {
+      .poster {
+        animation: none !important;
+      }
+
+      .btn-primary {
+        animation: none !important;
+      }
+    }
+
+    /* ══════════════════════════════════════
+       MOBILE
+    ══════════════════════════════════════ */
+    @media (max-width: 600px) {
+      nav {
+        padding: 16px 20px;
+      }
+
+      .hero {
+        padding: 100px 20px 60px;
+      }
+
+      .stat-item {
+        min-width: 100px;
+        padding: 12px 16px;
+      }
+
+      .stat-num {
+        font-size: 28px;
+      }
+
+      .poster {
+        width: 100px;
+        height: 150px;
+      }
+
+      .features-section {
+        padding: 60px 20px 80px;
+      }
     }
   </style>
 </head>
+
 <body>
 
-  <!-- Animated Background -->
-  <div class="bg-blobs">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+  <!-- ── FIXED BACKGROUND ── -->
+  <canvas id="nebula"></canvas>
+  <div class="grain"></div>
+
+  <div id="stage">
+    <div id="cards-world"></div>
   </div>
 
-  <div class="container">
-    <header>
-      <div class="logo">
-        <span class="logo-icon">📺</span>
-        IPTV+
-      </div>
-      <!-- You could put a nav here if needed later -->
-    </header>
+  <!-- ── PAGE CONTENT ── -->
+  <div id="page">
 
+    <!-- NAV -->
+    <nav>
+      <div class="nav-logo">IPTV<span>+</span></div>
+      <a href="https://apps.apple.com/app/id6738955480" class="nav-cta">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+        </svg>
+        App laden
+      </a>
+    </nav>
+
+    <!-- HERO -->
     <section class="hero">
-      <div class="hero-badge">Die neue Ära des Streamings</div>
-      <h1>Alle deine Playlists,<br><span>Neu Erfunden.</span></h1>
-      <p>IPTV+ verwandelt deine langweiligen Links in ein echtes Kinoerlebnis. Genieße ein atemberaubendes Design, smarte Deep-Links und volle Download-Unterstützung für unterwegs.</p>
-      
-      <div class="btn-group">
-        <a href="https://apps.apple.com/app/idDEINE_APP_ID" class="btn btn-primary">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z" style="display:none;"/>
-            <path d="M16.365 21.492C15.029 21.821 13.551 22 12 22 6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10c0 1.258-.236 2.463-.66 3.582M17.5 14.5a2.5 2.5 0 0 1-5 0V11a2.5 2.5 0 0 1 5 0v3.5zm-5 4v-4m-3.95-6.05L7.5 7.5M19 12h2m-6-8V2M5 12H3m4.05 4.05L6.05 17.1M17 6.3l1.1-1.1" style="display:none;"/>
-            <path d="M18.71 19.5C17.88 20.74 15 22 12 22s-5.88-1.26-6.71-2.5c-.39-.58-.33-1.35.15-1.85.93-.97 2.15-1.65 3.56-1.65h6c1.41 0 2.63.68 3.56 1.65.48.5.54 1.27.15 1.85z" style="display:none;"/>
-            <!-- Custom App Store Icon roughly -->
-            <path d="M15.4,10.6c0-2.4,2-3.7,2.1-3.7c-1.1-1.6-2.9-1.9-3.5-1.9c-1.5-0.1-3,0.9-3.8,0.9c-0.8,0-2-0.9-3.3-0.9 c-1.7,0-3.3,1-4.2,2.5C0.8,10.9,1.7,15,3.4,17.4c0.8,1.2,1.8,2.5,3.2,2.5c1.3,0,1.8-0.8,3.3-0.8c1.5,0,2,0.8,3.4,0.8 c1.4,0,2.3-1.3,3.1-2.5c1-1.4,1.4-2.8,1.4-2.9C17.7,14.5,15.4,13.6,15.4,10.6z M11.8,4.7c0.7-0.9,1.2-2.1,1-3.3 C11.8,1.5,10.7,2,9.9,2.8C9.3,3.5,8.8,4.7,9,5.8C10,5.9,11.1,5.5,11.8,4.7z"/>
+      <div class="hero-eyebrow">
+        <span class="dot"></span>
+        Dein smarter IPTV Player
+      </div>
+
+      <h1>Kino-Erlebnis.<br><span class="grad">Überall. Jederzeit.</span></h1>
+
+      <p class="hero-sub">
+        IPTV+ bringt Tausende Filme, Serien und Live-TV direkt auf dein iPhone —
+        mit elegantem Design und blitzschneller Performance.
+      </p>
+
+      <div class="hero-actions">
+        <a href="https://apps.apple.com/app/id6738955480" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
           </svg>
-          App Store
+          Kostenlos im App Store
         </a>
-        <a href="#features" class="btn btn-secondary">
-          Features Entdecken
+        <a href="#features" class="btn-ghost">
+          Features entdecken ↓
         </a>
       </div>
 
-      <div class="app-preview-container">
-        <div class="app-preview-glass">
-          <div class="app-header">
-            <div class="dot"></div>
-            <div class="dot"></div>
-            <div class="dot"></div>
-          </div>
-          <div class="app-body">
-            <div class="movie-card-mock"></div>
-            <div class="movie-card-mock"></div>
-            <div class="movie-card-mock"></div>
-          </div>
-        </div>
+      <div class="scroll-hint">
+        <span>Scroll</span>
+        <div class="arrow"></div>
       </div>
     </section>
 
-    <section id="features" class="features-section">
-      <div class="section-title">
-        <h2>Warum IPTV+?</h2>
-        <p>Entwickelt für die höchsten Ansprüche an Streaming und Design.</p>
-      </div>
-      
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🚀</div>
-          <h3 class="feature-title">Pfeilschnell</h3>
-          <p class="feature-desc">Genieße butterweiches Scrolling, sofortige Ladezeiten und eine Engine, die selbst mit riesigen Playlists spielend fertig wird.</p>
+    <!-- STATS BAR -->
+    <div class="frosted-section">
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-num" data-target="12400">0</span>
+          <span class="stat-label">Inhalte verfügbar</span>
         </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">⬇️</div>
-          <h3 class="feature-title">Offline Downloads</h3>
-          <p class="feature-desc">Lade deine Lieblingsfilme und Serien ganz einfach herunter und schaue sie jederzeit, auch wenn du kein Internet hast.</p>
+        <div class="stat-item">
+          <span class="stat-num" data-target="4">0</span>
+          <span class="stat-label">Sprachen</span>
         </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🔗</div>
-          <h3 class="feature-title">Deep Links</h3>
-          <p class="feature-desc">Teile Inhalte direkt mit deinen Freunden. Tippt man auf einen geteilten Link, öffnet sich der Film sofort in der App.</p>
+        <div class="stat-item">
+          <span class="stat-num" data-target="4">0</span>
+          <span class="stat-label">Sterne im App Store</span>
         </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🖥️</div>
-          <h3 class="feature-title">Picture-in-Picture</h3>
-          <p class="feature-desc">Schau weiter, während du chattest oder im Internet surfst. Unser nativer Player unterstützt PiP auf Systemebene.</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🎨</div>
-          <h3 class="feature-title">Premium Design</h3>
-          <p class="feature-desc">Dunkelmodus, Glassmorphismus und makellose Typografie. Eine UI, die sich nicht wie eine App anfühlt, sondern wie ein Erlebnis.</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">🔒</div>
-          <h3 class="feature-title">Sicher & Privat</h3>
-          <p class="feature-desc">Wir tracken dich nicht. Deine Playlists bleiben auf deinem Gerät und werden niemals an unsere Server gesendet.</p>
+        <div class="stat-item">
+          <span class="stat-num" data-target="0">∞</span>
+          <span class="stat-label">Monatliche Kosten</span>
         </div>
       </div>
-    </section>
+    </div>
 
-    <footer>
-      <p>&copy; 2026 IPTV+ App. Alle Rechte vorbehalten. Dies ist die Begleit-Website für das iOS Erlebnis.</p>
-    </footer>
-  </div>
+    <!-- FEATURES -->
+    <div class="frosted-section" id="features">
+      <div class="features-section">
+        <div style="max-width:1100px; margin:0 auto;">
+          <div class="section-label">Features</div>
+          <h2 class="section-title">Alles was du<br>brauchst.</h2>
+          <p class="section-sub">Entwickelt für maximalen Genuss — ohne Kompromisse bei Design oder Performance.</p>
+
+          <div class="features-grid">
+            <div class="feat-card">
+              <div class="feat-icon">🎬</div>
+              <h3>Riesige Bibliothek</h3>
+              <p>Tausende Filme und Serien aus aller Welt — immer aktuell, immer verfügbar.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon">📡</div>
+              <h3>Live TV</h3>
+              <p>Hunderte Live-Kanäle in HD-Qualität. Sport, News, Entertainment — alles live.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon">⚡</div>
+              <h3>Blitzschnell</h3>
+              <p>Optimiert für iOS. Kein Buffering, kein Warten. Einfach Play drücken und genießen.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon">🔗</div>
+              <h3>Inhalte teilen</h3>
+              <p>Teile Filme und Serien mit einem Link. Empfänger sehen sofort was sie erwartet.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon">🌙</div>
+              <h3>Elegantes Design</h3>
+              <p>Cinematisches Dark-Theme. Jedes Detail ist durchdacht — Kino-Feeling auf dem Handy.</p>
+            </div>
+            <div class="feat-card">
+              <div class="feat-icon">🔒</div>
+              <h3>Privat & Sicher</h3>
+              <p>Keine Werbung. Keine Tracker. Deine Daten bleiben auf deinem Gerät.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="frosted-section">
+      <div class="cta-section">
+        <div class="cta-inner">
+          <div class="section-label" style="justify-content:center;">Jetzt starten</div>
+          <h2 class="section-title">Bereit für<br><span
+              style="background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">dein
+              Kino?</span></h2>
+          <p class="section-sub">Kostenlos herunterladen. Sofort loslegen. Kein Abo nötig.</p>
+
+          <a href="https://apps.apple.com/app/id6738955480" class="btn-primary"
+            style="display:inline-flex; margin: 0 auto;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+            </svg>
+            Im App Store laden — Kostenlos
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="frosted-section">
+      <footer>
+        IPTV+ · Dein smarter IPTV Player · Alle Rechte vorbehalten
+      </footer>
+    </div>
+
+  </div><!-- /#page -->
 
   <script>
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
+    /* ══════════════════════════════════════════════
+       POSTER DATA  (identisch mit 404.html)
+    ══════════════════════════════════════════════ */
+    const POSTERS = [
+      { title: "Interstellar", tag: "Sci-Fi", cls: "p0", top: 4, left: 2, tz: -120, rz: -6, op: 0.55, dur: 5.2 },
+      { title: "The Crown", tag: "Drama", cls: "p1", top: 8, left: 75, tz: -60, rz: 5, op: 0.65, dur: 6.1 },
+      { title: "Dune", tag: "Epos", cls: "p2", top: 60, left: 1, tz: -90, rz: -4, op: 0.60, dur: 7.0 },
+      { title: "Oppenheimer", tag: "Biopic", cls: "p3", top: 70, left: 74, tz: -150, rz: 7, op: 0.50, dur: 5.8 },
+      { title: "Breaking Bad", tag: "Thriller", cls: "p4", top: 15, left: 88, tz: -40, rz: -8, op: 0.70, dur: 4.9 },
+      { title: "Planet Earth", tag: "Doku", cls: "p5", top: 42, left: 90, tz: -200, rz: 3, op: 0.40, dur: 8.2 },
+      { title: "Blade Runner 2049", tag: "Sci-Fi", cls: "p6", top: 78, left: 40, tz: -70, rz: -5, op: 0.60, dur: 6.5 },
+      { title: "The Bear", tag: "Drama", cls: "p7", top: 2, left: 40, tz: -180, rz: 6, op: 0.45, dur: 7.8 },
+      { title: "Avatar", tag: "Action", cls: "p8", top: 50, left: -2, tz: -30, rz: -3, op: 0.75, dur: 5.5 },
+      { title: "Squid Game", tag: "Thriller", cls: "p9", top: 30, left: 84, tz: -100, rz: 9, op: 0.55, dur: 6.8 },
+      { title: "The Mandalorian", tag: "Sci-Fi", cls: "p10", top: 85, left: 18, tz: -55, rz: -7, op: 0.65, dur: 4.6 },
+      { title: "Stranger Things", tag: "Horror", cls: "p11", top: 6, left: 18, tz: -220, rz: 4, op: 0.38, dur: 9.1 },
+      { title: "The Last of Us", tag: "Drama", cls: "p12", top: 55, left: 60, tz: -80, rz: -6, op: 0.58, dur: 5.9 },
+      { title: "Wednesday", tag: "Comedy", cls: "p13", top: 22, left: -1, tz: -160, rz: 5, op: 0.48, dur: 7.3 },
+      { title: "Severance", tag: "Mystery", cls: "p14", top: 80, left: 57, tz: -50, rz: -4, op: 0.70, dur: 6.2 },
+    ];
+
+    const SHAPES = [
+      `<svg width="130" height="130" viewBox="0 0 130 130" fill="none"><circle cx="65" cy="40" r="38" stroke="rgba(255,255,255,0.06)" stroke-width="1"/><circle cx="65" cy="40" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="1"/><line x1="30" y1="40" x2="100" y2="40" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><line x1="65" y1="5" x2="65" y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></svg>`,
+      `<svg width="130" height="100" viewBox="0 0 130 100" fill="none"><polygon points="65,10 110,80 20,80" stroke="rgba(255,255,255,0.07)" stroke-width="1.5" fill="none"/><polygon points="65,30 95,70 35,70" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/></svg>`,
+      `<svg width="130" height="130" viewBox="0 0 130 130" fill="none"><rect x="20" y="20" width="90" height="90" rx="8" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/><rect x="40" y="40" width="50" height="50" rx="4" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><line x1="20" y1="65" x2="110" y2="65" stroke="rgba(255,255,255,0.04)" stroke-width="1"/></svg>`,
+      `<svg width="130" height="130" viewBox="0 0 130 130" fill="none"><line x1="10" y1="10" x2="120" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><line x1="120" y1="10" x2="10" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="1"/><circle cx="65" cy="65" r="35" stroke="rgba(255,255,255,0.07)" stroke-width="1"/></svg>`,
+      `<svg width="130" height="130" viewBox="0 0 130 130" fill="none"><path d="M65 15 L110 85 L20 85 Z" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none"/><circle cx="65" cy="60" r="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></svg>`,
+    ];
+
+    const world = document.getElementById('cards-world');
+
+    POSTERS.forEach((p, i) => {
+      const el = document.createElement('div');
+      el.className = `poster ${p.cls}`;
+      el.style.cssText = `
+    top:${p.top}%; left:${p.left}%;
+    --tz:${p.tz}px; --rz:${p.rz}deg; --op:${p.op};
+    opacity:${p.op};
+    animation: cardEnter 0.9s cubic-bezier(0.23,1,0.32,1) ${i * 80}ms both,
+               float${i} ${p.dur}s ease-in-out ${i * 0.4}s infinite;
+  `;
+      const deco = document.createElement('div');
+      deco.className = 'p-deco';
+      deco.innerHTML = SHAPES[i % SHAPES.length];
+      const label = document.createElement('div');
+      label.className = 'p-label';
+      label.innerHTML = `<span class="p-tag">${p.tag}</span>${p.title}`;
+      el.appendChild(deco);
+      el.appendChild(label);
+      world.appendChild(el);
     });
+
+    /* ── PARALLAX ── */
+    let mx = 0, my = 0, cx = 0, cy = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = (e.clientX / window.innerWidth - 0.5) * 2;
+      my = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', e => {
+        mx = Math.max(-1, Math.min(1, (e.gamma || 0) / 30));
+        my = Math.max(-1, Math.min(1, (e.beta || 0) / 40));
+      });
+    }
+
+    (function tick() {
+      cx += (mx - cx) * 0.05;
+      cy += (my - cy) * 0.05;
+      world.style.transform = `rotateY(${cx * 8}deg) rotateX(${-cy * 6}deg)`;
+      requestAnimationFrame(tick);
+    })();
+
+    /* ── NEBULA ── */
+    (function () {
+      const canvas = document.getElementById('nebula');
+      const ctx = canvas.getContext('2d');
+      const isMob = window.innerWidth < 768;
+      const COUNT = isMob ? 40 : 90;
+
+      function resize() {
+        canvas.width = window.innerWidth * devicePixelRatio;
+        canvas.height = window.innerHeight * devicePixelRatio;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const particles = Array.from({ length: COUNT }, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 1.8 + 0.3,
+        a: Math.random() * 0.5 + 0.05,
+        hue: Math.random() < 0.5 ? 260 : (Math.random() < 0.5 ? 320 : 195),
+      }));
+
+      (function draw() {
+        const W = window.innerWidth, H = window.innerHeight;
+        ctx.clearRect(0, 0, W, H);
+        [{ x: W * 0.75, y: H * 0.35, r: W * 0.32, h: 260 }, { x: W * 0.20, y: H * 0.65, r: W * 0.25, h: 320 }, { x: W * 0.50, y: H * 0.15, r: W * 0.20, h: 195 }]
+          .forEach(b => {
+            const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+            g.addColorStop(0, `hsla(${b.h},70%,50%,0.06)`);
+            g.addColorStop(1, 'transparent');
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            ctx.ellipse(b.x, b.y, b.r, b.r * 0.65, 0, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+          if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},80%,70%,${p.a})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      })();
+    })();
+
+    /* ── INTERSECTION OBSERVER — fade in cards & stats ── */
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 80);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.feat-card, .stat-item').forEach(el => observer.observe(el));
+
+    /* ── COUNTER ANIMATION for stats ── */
+    const counterObs = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const nums = entry.target.querySelectorAll('.stat-num[data-target]');
+        nums.forEach(el => {
+          const target = +el.dataset.target;
+          if (!target) return;
+          const suffix = target >= 1000 ? '+' : (el.dataset.target === '4' && el.closest('.stat-item').querySelector('.stat-label').textContent.includes('Sterne') ? '★' : '+');
+          let start = 0;
+          const duration = 1400;
+          const startTime = performance.now();
+          function step(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            const current = Math.floor(ease * target);
+            el.textContent = current >= 1000 ? (current).toLocaleString('de-DE') + '+' : current + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        });
+        counterObs.unobserve(entry.target);
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.stats-bar').forEach(el => counterObs.observe(el));
+
+    /* ── TMDB (optional — same as 404.html) ── */
+    const TMDB_KEY = '97f59ba38db4b94f3c3c958e856aec6b'; // ← Key hier eintragen für echte Filmcover
+
+    if (TMDB_KEY) {
+      fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=de-DE`)
+        .then(r => r.json())
+        .then(data => {
+          const results = data.results || [];
+          document.querySelectorAll('.poster').forEach((card, i) => {
+            if (!results[i]?.poster_path) return;
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = `https://image.tmdb.org/t/p/w300${results[i].poster_path}`;
+            img.onload = () => {
+              card.style.backgroundImage = `url(${img.src})`;
+              card.style.backgroundSize = 'cover';
+              card.style.backgroundPosition = 'center';
+              const lbl = card.querySelector('.p-label');
+              if (lbl) lbl.innerHTML = `<span class="p-tag">${results[i].media_type === 'movie' ? 'Film' : 'Serie'}</span>${results[i].title || results[i].name || ''}`;
+            };
+          });
+        })
+        .catch(() => { });
+    }
   </script>
 </body>
+
 </html>

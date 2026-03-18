@@ -1,91 +1,974 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IPTV+ – In App öffnen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* ══════════════════════════════════════
+       RESET & BASE
+    ══════════════════════════════════════ */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #05060f;
+      --accent: #7C5CFC;
+      --accent2: #FC5C7D;
+      --teal: #00D4FF;
+      --gold: #F5C842;
+      --text: #eceef5;
+      --muted: rgba(236, 238, 245, 0.5);
+      --card-r: 18px;
+    }
+
+    html,
     body {
-      min-height: 100vh;
-      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
-      display: flex; align-items: center; justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-      color: #fff;
-    }
-    .card {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 24px;
-      padding: 40px 32px;
-      max-width: 380px;
-      width: 90%;
-      text-align: center;
-    }
-    .icon { font-size: 64px; margin-bottom: 20px; }
-    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-    p  { font-size: 15px; color: rgba(255,255,255,0.6); margin-bottom: 28px; line-height: 1.5; }
-    .btn {
-      display: inline-block;
-      padding: 16px 32px;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      text-decoration: none;
-      color: #fff;
-      background: linear-gradient(90deg, #6C63FF, #3B82F6);
-      margin-bottom: 12px;
       width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      cursor: default;
     }
+
+    /* ══════════════════════════════════════
+       CANVAS NEBULA
+    ══════════════════════════════════════ */
+    #nebula {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════
+       GRAIN OVERLAY
+    ══════════════════════════════════════ */
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* ══════════════════════════════════════
+       3D STAGE — entire background
+    ══════════════════════════════════════ */
+    #stage {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      perspective: 1400px;
+      perspective-origin: 50% 50%;
+      pointer-events: none;
+    }
+
+    #cards-world {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.12s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    /* ══════════════════════════════════════
+       POSTER CARD
+    ══════════════════════════════════════ */
+    .poster {
+      position: absolute;
+      width: 130px;
+      height: 195px;
+      border-radius: var(--card-r);
+      overflow: hidden;
+      transform-style: preserve-3d;
+      will-change: transform;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.6),
+        0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: box-shadow 0.4s ease;
+    }
+
+    /* Glossy sheen overlay on every card */
+    .poster::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.18) 0%,
+          rgba(255, 255, 255, 0.04) 40%,
+          transparent 60%);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    /* Inner label */
+    .poster .p-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 28px 10px 10px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+      font-family: 'Syne', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.3;
+    }
+
+    .poster .p-tag {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    /* Each poster gets its own gradient + float animation */
+    .poster.p0 {
+      background: linear-gradient(155deg, #0f0c29, #302b63, #24243e);
+    }
+
+    .poster.p1 {
+      background: linear-gradient(155deg, #1a0533, #6a0572, #ab2fb4);
+    }
+
+    .poster.p2 {
+      background: linear-gradient(155deg, #000428, #004e92, #0098d4);
+    }
+
+    .poster.p3 {
+      background: linear-gradient(155deg, #0d0d0d, #434343, #1a1a2e);
+    }
+
+    .poster.p4 {
+      background: linear-gradient(155deg, #1f0a00, #8b1a1a, #c0392b);
+    }
+
+    .poster.p5 {
+      background: linear-gradient(155deg, #001b00, #1a5c1a, #27ae60);
+    }
+
+    .poster.p6 {
+      background: linear-gradient(155deg, #1a0a00, #7a3b00, #e67e22);
+    }
+
+    .poster.p7 {
+      background: linear-gradient(155deg, #000000, #0a0a0a, #1c1c2e);
+    }
+
+    .poster.p8 {
+      background: linear-gradient(155deg, #0f2027, #203a43, #2c5364);
+    }
+
+    .poster.p9 {
+      background: linear-gradient(155deg, #1a001a, #4a004a, #8e44ad);
+    }
+
+    .poster.p10 {
+      background: linear-gradient(155deg, #001f00, #004d00, #145a32);
+    }
+
+    .poster.p11 {
+      background: linear-gradient(155deg, #0d0d2b, #1a1a5c, #2980b9);
+    }
+
+    .poster.p12 {
+      background: linear-gradient(155deg, #1f0000, #6b0000, #c0392b);
+    }
+
+    .poster.p13 {
+      background: linear-gradient(155deg, #100000, #3d0000, #922b21);
+    }
+
+    .poster.p14 {
+      background: linear-gradient(155deg, #070707, #1a1a1a, #2c3e50);
+    }
+
+    /* Decorative stripes / shapes inside poster */
+    .poster .p-deco {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* Float keyframes — 15 unique variations */
+    @keyframes float0 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(0px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-14px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float1 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-8px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(10px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float2 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(6px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-18px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float3 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-4px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(12px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float4 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(10px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-8px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float5 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-12px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(6px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float6 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(4px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-16px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float7 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-6px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(14px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float8 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(8px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-10px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float9 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-10px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(8px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float10 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(2px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-12px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float11 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-16px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(4px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float12 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(12px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-6px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float13 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(-3px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(16px) rotateZ(var(--rz))
+      }
+    }
+
+    @keyframes float14 {
+
+      0%,
+      100% {
+        transform: translateZ(var(--tz)) translateY(16px) rotateZ(var(--rz))
+      }
+
+      50% {
+        transform: translateZ(var(--tz)) translateY(-4px) rotateZ(var(--rz))
+      }
+    }
+
+    /* Entry animation */
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateZ(var(--tz)) scale(0.6) rotateY(40deg);
+      }
+
+      to {
+        opacity: var(--op);
+      }
+    }
+
+    /* ══════════════════════════════════════
+       FOREGROUND UI
+    ══════════════════════════════════════ */
+    #ui {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .glass-card {
+      background: rgba(12, 13, 28, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      padding: 44px 36px 36px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(28px) saturate(1.4);
+      -webkit-backdrop-filter: blur(28px) saturate(1.4);
+      box-shadow:
+        0 0 0 1px rgba(124, 92, 252, 0.15),
+        0 32px 80px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      animation: cardSlideUp 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
+    }
+
+    @keyframes cardSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(32px) scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Type badge */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: rgba(124, 92, 252, 0.15);
+      border: 1px solid rgba(124, 92, 252, 0.3);
+      color: #a98dff;
+      margin-bottom: 20px;
+    }
+
+    .type-badge .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #7C5CFC;
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    /* Big emoji icon */
+    .big-icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+      display: block;
+      filter: drop-shadow(0 0 20px rgba(124, 92, 252, 0.6));
+      animation: iconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+    }
+
+    @keyframes iconPop {
+      from {
+        transform: scale(0.4);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    #desc {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      color: #fff;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #7C5CFC, #FC5C7D);
+      box-shadow:
+        0 0 0 0 rgba(124, 92, 252, 0.4),
+        0 8px 24px rgba(124, 92, 252, 0.35);
+      animation: pulseShadow 2.5s ease-in-out infinite;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      margin-bottom: 12px;
+    }
+
+    @keyframes pulseShadow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(124, 92, 252, 0.4), 0 8px 24px rgba(124, 92, 252, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(124, 92, 252, 0), 0 8px 32px rgba(124, 92, 252, 0.5);
+      }
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    /* Conic shimmer sweep on primary button */
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: conic-gradient(from var(--a, 0deg),
+          transparent 20%,
+          rgba(255, 255, 255, 0.25) 40%,
+          transparent 60%);
+      border-radius: inherit;
+      animation: spin 3s linear infinite;
+      z-index: -1;
+    }
+
+    @property --a {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    @keyframes spin {
+      to {
+        --a: 360deg;
+      }
+    }
+
     .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      color: rgba(255, 255, 255, 0.75);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+      cursor: pointer;
     }
-    small { color: rgba(255,255,255,0.35); font-size: 12px; margin-top: 16px; display: block; }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:active {
+      transform: scale(0.97);
+    }
+
+    /* ── DIVIDER ── */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.2);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ── FOOTER NOTE ── */
+    .foot {
+      margin-top: 24px;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.2);
+      letter-spacing: 0.06em;
+    }
+
+    /* ══════════════════════════════════════
+       REDUCE MOTION
+    ══════════════════════════════════════ */
+    @media (prefers-reduced-motion: reduce) {
+
+      .poster,
+      .btn-primary,
+      .btn-primary::before {
+        animation: none !important;
+      }
+
+      #cards-world {
+        transition: none !important;
+      }
+    }
+
+    /* ══════════════════════════════════════
+       MOBILE TWEAKS
+    ══════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .glass-card {
+        padding: 36px 24px 28px;
+        border-radius: 24px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .poster {
+        width: 100px;
+        height: 150px;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="icon">📺</div>
-    <h1>In IPTV+ öffnen</h1>
-    <p id="desc">Dieser Link führt zu einem Inhalt in der IPTV+ App.</p>
 
-    <a id="open-btn" href="#" class="btn">In App öffnen</a>
-    <a href="https://apps.apple.com/app/idDEINE_APP_ID" class="btn btn-secondary">
-      App herunterladen
-    </a>
+  <!-- Particle nebula -->
+  <canvas id="nebula"></canvas>
 
-    <small>IPTV+ – Dein smarter IPTV Player</small>
+  <!-- Grain texture -->
+  <div class="grain"></div>
+
+  <!-- 3D card stage -->
+  <div id="stage">
+    <div id="cards-world"></div>
+  </div>
+
+  <!-- Foreground UI -->
+  <div id="ui">
+    <div class="glass-card">
+      <div class="type-badge">
+        <span class="dot"></span>
+        <span id="type-label">IPTV+</span>
+      </div>
+      <span class="big-icon" id="icon">📺</span>
+      <h1 id="title">In IPTV+ öffnen</h1>
+      <p id="desc">Dieser Link führt zu einem Inhalt in der IPTV+ App.</p>
+
+      <a id="open-btn" href="#" class="btn-primary">
+        ▶&ensp;In App öffnen
+      </a>
+
+      <div class="or-divider">oder</div>
+
+      <a href="https://apps.apple.com/app/id6738955480" class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+        </svg>
+        App herunterladen
+      </a>
+
+      <p class="foot">IPTV+ · Dein smarter IPTV Player</p>
+    </div>
   </div>
 
   <script>
-    // Build the iptvplus:// fallback from the current https:// URL
-    // e.g. /iptvplus-links/movie/310753 or /movie/310753
-    const path = window.location.pathname; 
-    let parts = path.split('/').filter(Boolean);
-    
-    // Skip GitHub Pages subfolder repo name if present
-    if (parts[0] === 'iptvplus-links') {
-      parts = parts.slice(1);
+    /* ════════════════════════════════════════════
+       POSTER DATA  (Titel, Tag, Klasse, Position)
+       Kein API nötig — reine CSS-Gradient-Karten.
+       Für echte Cover: TMDB_API_KEY setzen (unten)
+    ════════════════════════════════════════════ */
+    const POSTERS = [
+      { title: "Interstellar", tag: "Sci-Fi", cls: "p0", top: 4, left: 2, tz: -120, rz: -6, op: 0.55, dur: 5.2 },
+      { title: "The Crown", tag: "Drama", cls: "p1", top: 8, left: 75, tz: -60, rz: 5, op: 0.65, dur: 6.1 },
+      { title: "Dune", tag: "Epos", cls: "p2", top: 60, left: 1, tz: -90, rz: -4, op: 0.6, dur: 7.0 },
+      { title: "Oppenheimer", tag: "Biopic", cls: "p3", top: 70, left: 74, tz: -150, rz: 7, op: 0.5, dur: 5.8 },
+      { title: "Breaking Bad", tag: "Thriller", cls: "p4", top: 15, left: 88, tz: -40, rz: -8, op: 0.7, dur: 4.9 },
+      { title: "Planet Earth", tag: "Doku", cls: "p5", top: 42, left: 90, tz: -200, rz: 3, op: 0.4, dur: 8.2 },
+      { title: "Blade Runner 2049", tag: "Sci-Fi", cls: "p6", top: 78, left: 40, tz: -70, rz: -5, op: 0.6, dur: 6.5 },
+      { title: "The Bear", tag: "Drama", cls: "p7", top: 2, left: 40, tz: -180, rz: 6, op: 0.45, dur: 7.8 },
+      { title: "Avatar", tag: "Action", cls: "p8", top: 50, left: -2, tz: -30, rz: -3, op: 0.75, dur: 5.5 },
+      { title: "Squid Game", tag: "Thriller", cls: "p9", top: 30, left: 84, tz: -100, rz: 9, op: 0.55, dur: 6.8 },
+      { title: "The Mandalorian", tag: "Sci-Fi", cls: "p10", top: 85, left: 18, tz: -55, rz: -7, op: 0.65, dur: 4.6 },
+      { title: "Stranger Things", tag: "Horror", cls: "p11", top: 6, left: 18, tz: -220, rz: 4, op: 0.38, dur: 9.1 },
+      { title: "The Last of Us", tag: "Drama", cls: "p12", top: 55, left: 60, tz: -80, rz: -6, op: 0.58, dur: 5.9 },
+      { title: "Wednesday", tag: "Comedy", cls: "p13", top: 22, left: -1, tz: -160, rz: 5, op: 0.48, dur: 7.3 },
+      { title: "Severance", tag: "Mystery", cls: "p14", top: 80, left: 57, tz: -50, rz: -4, op: 0.7, dur: 6.2 },
+    ];
+
+    /* ════════════════════════════════════════════
+       BUILD POSTER CARDS
+    ════════════════════════════════════════════ */
+    const world = document.getElementById('cards-world');
+
+    POSTERS.forEach((p, i) => {
+      const el = document.createElement('div');
+      el.className = `poster ${p.cls}`;
+
+      // Position & CSS vars
+      el.style.cssText = `
+    top: ${p.top}%;
+    left: ${p.left}%;
+    --tz: ${p.tz}px;
+    --rz: ${p.rz}deg;
+    --op: ${p.op};
+    opacity: ${p.op};
+    animation:
+      cardEnter 0.9s cubic-bezier(0.23,1,0.32,1) ${i * 80}ms both,
+      float${i} ${p.dur}s ease-in-out ${i * 0.4}s infinite;
+  `;
+
+      /* decorative shape inside */
+      const deco = document.createElement('div');
+      deco.className = 'p-deco';
+      deco.innerHTML = buildDeco(i);
+
+      const label = document.createElement('div');
+      label.className = 'p-label';
+      label.innerHTML = `<span class="p-tag">${p.tag}</span>${p.title}`;
+
+      el.appendChild(deco);
+      el.appendChild(label);
+      world.appendChild(el);
+    });
+
+    function buildDeco(i) {
+      const shapes = [
+        `<svg width="130" height="130" viewBox="0 0 130 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="65" cy="40" r="38" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+      <circle cx="65" cy="40" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+      <line x1="30" y1="40" x2="100" y2="40" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="65" y1="5"  x2="65"  y2="75" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    </svg>`,
+        `<svg width="130" height="100" viewBox="0 0 130 100" fill="none">
+      <polygon points="65,10 110,80 20,80" stroke="rgba(255,255,255,0.07)" stroke-width="1.5" fill="none"/>
+      <polygon points="65,30 95,70 35,70" stroke="rgba(255,255,255,0.05)" stroke-width="1" fill="none"/>
+    </svg>`,
+        `<svg width="130" height="130" viewBox="0 0 130 130" fill="none">
+      <rect x="20" y="20" width="90" height="90" rx="8" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+      <rect x="40" y="40" width="50" height="50" rx="4" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="20" y1="65" x2="110" y2="65" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    </svg>`,
+        `<svg width="130" height="130" viewBox="0 0 130 130" fill="none">
+      <line x1="10" y1="10" x2="120" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="120" y1="10" x2="10" y2="120" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <circle cx="65" cy="65" r="35" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    </svg>`,
+        `<svg width="130" height="130" viewBox="0 0 130 130" fill="none">
+      <path d="M65 15 L110 85 L20 85 Z" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none"/>
+      <circle cx="65" cy="60" r="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    </svg>`,
+      ];
+      return shapes[i % shapes.length];
     }
-    
-    const type  = parts[0];
-    const rest  = parts.slice(1).join('/');
 
-    // Update description
+    /* ════════════════════════════════════════════
+       MOUSE PARALLAX  →  shifts the 3D world
+    ════════════════════════════════════════════ */
+    let mx = 0, my = 0, cx = 0, cy = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = (e.clientX / window.innerWidth - 0.5) * 2;  // –1 … +1
+      my = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    /* Gyroscope on mobile */
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', e => {
+        mx = Math.max(-1, Math.min(1, (e.gamma || 0) / 30));
+        my = Math.max(-1, Math.min(1, (e.beta || 0) / 40));
+      });
+    }
+
+    function animParallax() {
+      cx += (mx - cx) * 0.05;
+      cy += (my - cy) * 0.05;
+      world.style.transform = `rotateY(${cx * 8}deg) rotateX(${-cy * 6}deg)`;
+      requestAnimationFrame(animParallax);
+    }
+    animParallax();
+
+    /* ════════════════════════════════════════════
+       PARTICLE NEBULA
+    ════════════════════════════════════════════ */
+    (function () {
+      const canvas = document.getElementById('nebula');
+      const ctx = canvas.getContext('2d');
+      const isMob = window.innerWidth < 768;
+      const COUNT = isMob ? 40 : 90;
+
+      function resize() {
+        canvas.width = window.innerWidth * devicePixelRatio;
+        canvas.height = window.innerHeight * devicePixelRatio;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const particles = Array.from({ length: COUNT }, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 1.8 + 0.3,
+        a: Math.random() * 0.5 + 0.05,
+        hue: Math.random() < 0.5 ? 260 : (Math.random() < 0.5 ? 320 : 195),
+      }));
+
+      function drawNebula() {
+        const W = window.innerWidth, H = window.innerHeight;
+        ctx.clearRect(0, 0, W, H);
+
+        /* soft ambient blobs */
+        const blobs = [
+          { x: W * 0.75, y: H * 0.35, r: W * 0.32, h: 260 },
+          { x: W * 0.20, y: H * 0.65, r: W * 0.25, h: 320 },
+          { x: W * 0.50, y: H * 0.15, r: W * 0.20, h: 195 },
+        ];
+        blobs.forEach(b => {
+          const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+          g.addColorStop(0, `hsla(${b.h},70%,50%,0.06)`);
+          g.addColorStop(1, 'transparent');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.ellipse(b.x, b.y, b.r, b.r * 0.65, 0, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        /* particles */
+        particles.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+          if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},80%,70%,${p.a})`;
+          ctx.fill();
+        });
+
+        requestAnimationFrame(drawNebula);
+      }
+      drawNebula();
+    })();
+
+    /* ════════════════════════════════════════════
+       DEEP-LINK LOGIC  (bestehende Logik erweitert)
+    ════════════════════════════════════════════ */
+    const path = window.location.pathname;
+    let parts = path.split('/').filter(Boolean);
+    if (parts[0] === 'iptvplus-links') parts = parts.slice(1);
+
+    const type = parts[0];
+    const rest = parts.slice(1).join('/');
+
     const desc = document.getElementById('desc');
-    if (type === 'movie')   desc.textContent = '🎬 Jemand hat einen Film mit dir geteilt.';
-    if (type === 'series')  desc.textContent = '📺 Jemand hat eine Serie mit dir geteilt.';
-    if (type === 'episode') desc.textContent = '▶️ Jemand hat eine Episode mit dir geteilt.';
-
-    // Set deep-link button
+    const icon = document.getElementById('icon');
+    const title = document.getElementById('title');
+    const badge = document.getElementById('type-label');
     const btn = document.getElementById('open-btn');
-    btn.href = `iptvplus://${type}/${rest}`;
 
-    // On iOS, try to open the app immediately; if not installed the page stays
-    setTimeout(() => {
-      window.location = btn.href;
-    }, 300);
+    const meta = {
+      movie: { icon: '🎬', label: 'Film', badge: 'FILM', desc: 'Jemand hat einen Film mit dir geteilt.' },
+      series: { icon: '📺', label: 'Serie', badge: 'SERIE', desc: 'Jemand hat eine Serie mit dir geteilt.' },
+      episode: { icon: '▶️', label: 'Episode', badge: 'EPISODE', desc: 'Jemand hat eine Episode mit dir geteilt.' },
+    };
+
+    if (meta[type]) {
+      const m = meta[type];
+      icon.textContent = m.icon;
+      title.textContent = `${m.label} in IPTV+ öffnen`;
+      desc.textContent = m.desc;
+      badge.textContent = m.badge;
+    }
+
+    if (type && rest) {
+      btn.href = `iptvplus://${type}/${rest}`;
+      // Auto-open after 500ms
+      setTimeout(() => { window.location = btn.href; }, 500);
+    }
+
+    const TMDB_KEY = '97f59ba38db4b94f3c3c958e856aec6b';
+
+    if (TMDB_KEY) {
+      fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${TMDB_KEY}&language=de-DE`)
+        .then(r => r.json())
+        .then(data => {
+          const results = data.results || [];
+          const cards = document.querySelectorAll('.poster');
+          cards.forEach((card, i) => {
+            if (!results[i]?.poster_path) return;
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = `https://image.tmdb.org/t/p/w300${results[i].poster_path}`;
+            img.onload = () => {
+              card.style.backgroundImage = `url(${img.src})`;
+              card.style.backgroundSize = 'cover';
+              card.style.backgroundPosition = 'center';
+              // update label
+              const lbl = card.querySelector('.p-label');
+              if (lbl) {
+                const nameKey = results[i].title || results[i].name || '';
+                lbl.innerHTML = `<span class="p-tag">${results[i].media_type === 'movie' ? 'Film' : 'Serie'}</span>${nameKey}`;
+              }
+            };
+          });
+        })
+        .catch(() => {/* Graceful fallback — CSS gradients bleiben */ });
+    }
   </script>
 </body>
+
 </html>
